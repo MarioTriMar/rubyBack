@@ -1,6 +1,8 @@
 Rails.application.routes.draw do
-  # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
-
-  # Defines the root path route ("/")
-  # root "articles#index"
+  namespace :api do
+    post 'add_note', action: :addNote, controller: :notes
+    get 'get_noteById', action: :getNoteById, controller: :notes
+    put 'update_note', action: :updateNote, controller: :notes
+    delete 'delete_note', action: :deleteNote, controller: :notes
+  end
 end
