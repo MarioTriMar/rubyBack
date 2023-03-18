@@ -5,5 +5,6 @@ class Note
   field :text, type: String
   field :tag, type: String
   field :idUser, type: String
+  field :image, type: String
   include Mongoid::Timestamps
 end

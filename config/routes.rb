@@ -5,5 +5,6 @@ Rails.application.routes.draw do
     put 'update_note', action: :updateNote, controller: :notes
     delete 'delete_note', action: :deleteNote, controller: :notes
     get 'get_allNotes', action: :getAllNotes, controller: :notes
+    get 'get_notesByTag', action: :getNoteByTag, controller: :notes
   end
 end
