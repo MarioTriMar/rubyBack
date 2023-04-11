@@ -16,11 +16,11 @@ class Api::NotesController < ApplicationController
         end
     end
     def getNoteByIdUser
-        note= Note.find_by(idUser: params[:idUser])
+        note= Note.where(idUser: params[:idUser])
         if note
             render json:note, status: :ok
         else
-            render json: {msg: 'Note not found'}, status: :unprocessable_entity
+            render json: {msg: 'Notes not found'}, status: :unprocessable_entity
         end
     end
     def updateNote
