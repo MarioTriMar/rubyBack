@@ -1,8 +1,15 @@
 class User
   include Mongoid::Document
-  field :id, type: BSON::ObjectId
+  include ActiveModel::SecurePassword
+
+  field :_id, type: BSON::ObjectId
   field :username, type: String
   field :email, type: String
-  field :pwd1, type:String 
-  field :pwd2, type:String
+  field :password_digest, type:String 
+  
+
+  validates :email, uniqueness: true
+  validates :username, uniqueness: true
+  
+  has_secure_password
 end
