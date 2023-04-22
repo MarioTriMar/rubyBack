@@ -9,5 +9,7 @@ Rails.application.routes.draw do
     get 'get_allNotesByUserId', action: :getNoteByIdUser, controller: :notes
     post 'add_user', action: :addUser, controller: :user
     get 'login', action: :login, controller: :user
+    get 'get_allUsers', action: :getAllUsers, controller: :user
+    put 'update_user', action: :updateUser, controller: :user
   end
 end
