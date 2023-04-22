@@ -55,4 +55,37 @@ class Api::UserController < ApplicationController
             render json: {message: "The phone number must be between 600 00 00 00 and 999 99 99 99"}, status: :unprocessable_entity
         end
     end
+    def getUserById
+        user= User.find(params[:_id])
+        if user
+            render json:user, status: :ok
+        else
+            render json: {msg: 'User not found'}, status: :unprocessable_entity
+        end
+    end
+
+    def getUsersContaining
+        search_term = params[:username]
+        users=User.all
+        matching_users = []
+        users.each do |user|
+            if user.username.downcase.include?(search_term.downcase)
+                matching_users << user
+            end
+        end
+        if matching_users
+            render json:matching_users, status: :ok
+        else
+            render json: {msg: 'User not found'}, status: :unprocessable_entity
+        end
+    end
+
+    def createFriendshipRequest
+        friendship = Friendship.new(userA: params[:userA], userB: params[:userB], state: params[:state])
+        if friendship.save()
+            render json:friendship, status: :ok
+        else
+            render json: {message: "Friendship not created"}, status: :unprocessable_entity
+        end
+    end
 end

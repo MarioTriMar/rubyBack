@@ -11,5 +11,8 @@ Rails.application.routes.draw do
     get 'login', action: :login, controller: :user
     get 'get_allUsers', action: :getAllUsers, controller: :user
     put 'update_user', action: :updateUser, controller: :user
+    get 'get_userById', action: :getUserById, controller: :user
+    get 'get_userContaining', action: :getUsersContaining, controller: :user
+    post 'create_friendshipRequest',  action: :createFriendshipRequest, controller: :user
   end
 end
