@@ -151,6 +151,7 @@ class Api::UserController < ApplicationController
         if friendshipBtrue.present?
             render json:{message:"friends"}, status: :ok and return 
         end
+        render json:{message:""}, status: :ok
     end
     def getFriendshipRequestOfUsers
         friendship=Friendship.where(userA: params[:userB], userB: params[:userA], state:'false')
