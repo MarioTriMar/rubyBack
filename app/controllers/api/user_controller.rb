@@ -55,4 +55,109 @@ class Api::UserController < ApplicationController
             render json: {message: "The phone number must be between 600 00 00 00 and 999 99 99 99"}, status: :unprocessable_entity
         end
     end
+    def getUserById
+        user= User.find(params[:_id])
+        if user
+            render json:user, status: :ok
+        else
+            render json: {msg: 'User not found'}, status: :unprocessable_entity
+        end
+    end
+
+    def getUsersContaining
+        search_term = params[:username]
+        users=User.all
+        matching_users = []
+        users.each do |user|
+            if user.username.downcase.include?(search_term.downcase)
+                matching_users << user
+            end
+        end
+        if matching_users
+            render json:matching_users, status: :ok
+        else
+            render json: {msg: 'User not found'}, status: :unprocessable_entity
+        end
+    end
+
+    def createFriendshipRequest
+        friendship = Friendship.new(userA: params[:userA], userB: params[:userB], state: params[:state])
+        if friendship.save()
+            render json:friendship, status: :ok
+        else
+            render json: {message: "Friendship not created"}, status: :unprocessable_entity
+        end
+    end
+    def getFriendshipsRequestByUserId
+        friendships= Friendship.where(userB: params[:userB], state: 'false')
+        friendshipsAux=[]
+        friendships.each do |friendship|
+            user=User.find(friendship.userA)
+            friendshipsAux<<{
+                _id:friendship._id,
+                userA:friendship.userA,
+                userB:friendship.userB,
+                nameB:user.username,
+                state:friendship.state,
+                created_at:friendship.created_at,
+                updated_at:friendship.updated_at
+            }
+        end
+        if friendshipsAux
+            render json:friendshipsAux, status: :ok
+        else
+            render json: {msg: 'Requests not found'}, status: :unprocessable_entity
+        end
+    end
+    def acceptFriendshipRequest
+        friendship = Friendship.find(params[:_id])
+        if friendship
+            if friendship.update(state:'true')
+                render json:friendship, status: :ok
+            else
+                render json: {message: "Request not updated"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Request not found"}, status: :unprocessable_entity
+        end
+    end
+
+    def rejectFriendshipRequest
+        friendship = Friendship.find(params[:_id])
+        if friendship
+            if friendship.destroy
+                render json:{message: "Request deleted"}, status: :ok
+            else
+                render json: {message: "Request not deleted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Request not found"}, status: :unprocessable_entity
+        end
+    end
+    def hasFriendshipRequest
+        friendshipA = Friendship.where(userA: params[:userA], userB: params[:userB], state: 'false')
+        if friendshipA.present?
+            render json:{message:"alreadySent"}, status: :ok and return 
+        end
+        friendshipB = Friendship.where(userA: params[:userB], userB: params[:userA], state:'false')
+        if friendshipB.present?
+            render json:{message:"applicant"}, status: :ok and return 
+        end
+        friendshipAtrue = Friendship.where(userA: params[:userA], userB: params[:userB], state: 'true')
+        if friendshipAtrue.present?
+            render json:{message:"friends"}, status: :ok and return 
+        end
+        friendshipBtrue = Friendship.where(userA: params[:userB], userB: params[:userA], state:'true')
+        if friendshipBtrue.present?
+            render json:{message:"friends"}, status: :ok and return 
+        end
+    end
+    def getFriendshipRequestOfUsers
+        friendship=Friendship.where(userA: params[:userB], userB: params[:userA], state:'false')
+        if friendship
+            render json:friendship, status: :ok
+        else
+            render json: {msg: 'Friendship not found'}, status: :unprocessable_entity
+        end
+    end
 end
