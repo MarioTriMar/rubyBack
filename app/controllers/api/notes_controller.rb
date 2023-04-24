@@ -66,4 +66,60 @@ class Api::NotesController < ApplicationController
             render json: {msg: 'Note not found'}, status: :unprocessable_entity
         end
     end
+
+    def createNoteRequest
+        exist = SharedNote.where(userId: params[:userId], noteId: params[:noteId])
+        
+        if exist.present?
+            render json:{message:"Already shared"}, status: :unprocessable_entity and return
+        else
+            sharedNote = SharedNote.new(userId: params[:userId], noteId: params[:noteId], state: params[:state])
+            if sharedNote.save()
+              render json:sharedNote, status: :ok
+            else
+                render json: {message: "Request not created"}, status: :unprocessable_entity
+            end
+        end
+    end
+
+    def getNoteRequests
+        notesRequests= SharedNote.where(userId: params[:userId], state: 'false')
+        requestsAux=[]
+        notesRequests.each do |request|
+            note=Note.find(request.noteId)
+            requestsAux<<{
+                noteRequest:request,
+                note: note
+            }
+        end
+        if requestsAux
+            render json:requestsAux, status: :ok
+        else
+            render json: {msg: 'Requests not found'}, status: :unprocessable_entity
+        end
+    end
+    def acceptRequest
+        noteRequest=SharedNote.find(params[:requestId])
+        if noteRequest
+            if noteRequest.update(state:'true')
+                render json:noteRequest, status: :ok
+            else
+                render json: {message: "Request not accepted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Request not found"}, status: :unprocessable_entity
+        end
+    end
+    def rejectRequest
+        noteRequest=SharedNote.find(params[:requestId])
+        if noteRequest
+            if noteRequest.destroy()
+                render json:noteRequest, status: :ok
+            else
+                render json: {message: "Request not deleted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Request not found"}, status: :unprocessable_entity
+        end
+    end
 end

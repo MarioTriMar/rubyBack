@@ -161,4 +161,22 @@ class Api::UserController < ApplicationController
             render json: {msg: 'Friendship not found'}, status: :unprocessable_entity
         end
     end
+    def getAllFriends
+        friendshipsA=Friendship.where(userA:params[:_id], state:'true')
+        friends=[]
+        friendshipsA.each do |friendshipA|
+            user=User.find(friendshipA.userB)
+            friends<<user      
+        end
+        friendshipsB=Friendship.where(userB:params[:_id],state:'true')
+        friendshipsB.each do |friendshipB|
+            user=User.find(friendshipB.userA)
+            friends<<user      
+        end
+        if friends
+            render json:friends, status: :ok
+        else
+            render json: {message: "Friends not found"}, status: :unprocessable_entity
+        end
+    end
 end

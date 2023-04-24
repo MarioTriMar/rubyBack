@@ -19,6 +19,10 @@ Rails.application.routes.draw do
     delete 'reject_friendshipRequest', action: :rejectFriendshipRequest, controller: :user
     get 'get_hasFriendshipRequest', action: :hasFriendshipRequest, controller: :user
     get 'get_FriendshipRequestOfUsers', action: :getFriendshipRequestOfUsers, controller: :user
-
+    get 'get_allFriends', action: :getAllFriends, controller: :user
+    post 'create_noteRequest', action: :createNoteRequest, controller: :notes
+    get 'get_sharedNoteRequests', action: :getNoteRequests, controller: :notes
+    put 'accept_noteRequest', action: :acceptRequest, controller: :notes
+    delete 'reject_noteRequest', action: :rejectRequest, controller: :notes
   end
 end
