@@ -24,5 +24,6 @@ Rails.application.routes.draw do
     get 'get_sharedNoteRequests', action: :getNoteRequests, controller: :notes
     put 'accept_noteRequest', action: :acceptRequest, controller: :notes
     delete 'reject_noteRequest', action: :rejectRequest, controller: :notes
+    put 'update_password', action: :updatePassword, controller: :user
   end
 end

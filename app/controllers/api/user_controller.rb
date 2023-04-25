@@ -55,6 +55,20 @@ class Api::UserController < ApplicationController
             render json: {message: "The phone number must be between 600 00 00 00 and 999 99 99 99"}, status: :unprocessable_entity
         end
     end
+    def updatePassword
+        if (params[:password]==params[:password2])
+            user=User.find(params[:userId])
+            if user
+                user.password_digest = BCrypt::Password.create(params[:password])
+                user.update()
+                render json:user, status: :ok
+            else
+                render json: {msg: 'User does not exist'}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Passwords do not match"}, status: :unprocessable_entity
+        end
+    end
     def getUserById
         user= User.find(params[:_id])
         if user
