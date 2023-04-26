@@ -135,7 +135,6 @@ class Api::UserController < ApplicationController
             render json: {message: "Request not found"}, status: :unprocessable_entity
         end
     end
-
     def rejectFriendshipRequest
         friendship = Friendship.find(params[:_id])
         if friendship
@@ -180,12 +179,18 @@ class Api::UserController < ApplicationController
         friends=[]
         friendshipsA.each do |friendshipA|
             user=User.find(friendshipA.userB)
-            friends<<user      
+            friends<<{
+                idRequest: friendshipA._id,
+                user: user
+            }      
         end
         friendshipsB=Friendship.where(userB:params[:_id],state:'true')
         friendshipsB.each do |friendshipB|
             user=User.find(friendshipB.userA)
-            friends<<user      
+            friends<<{
+                idRequest: friendshipB._id,
+                user: user
+            }           
         end
         if friends
             render json:friends, status: :ok

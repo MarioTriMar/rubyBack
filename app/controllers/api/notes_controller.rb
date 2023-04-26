@@ -122,4 +122,65 @@ class Api::NotesController < ApplicationController
             render json: {message: "Request not found"}, status: :unprocessable_entity
         end
     end
+
+    def createCollection
+        collection = Collection.new(name: params[:name], idUser: params[:idUser])
+        if collection.save()
+            render json:collection, status: :ok
+        else
+            render json: {message: "Collection not created"}, status: :unprocessable_entity
+        end
+    end
+    def addNoteToCollection
+        collection=Collection.find(_id:params[:collectionId])
+        collection.notes<<params[:noteId]
+        if collection.update()
+            render json:collection, status: :ok
+        else
+            render json: {message: "Note not added"}, status: :unprocessable_entity
+        end
+    end
+    def getCollectionsOfUser
+        collection=Collection.where(idUser:params[:idUser])
+        if collection
+            render json:collection, status: :ok
+        else
+            render json: {message: "Collections not found"}, status: :unprocessable_entity
+        end
+    end
+    def deleteNoteOfCollection
+        collection=Collection.find(_id:params[:collectionId])
+        collection.notes.delete(params[:noteId])
+        if collection.update()
+            render json:collection, status: :ok
+        else
+            render json: {message: "Note not added"}, status: :unprocessable_entity
+        end
+    end
+    def deleteCollection
+        collection = Collection.find(params[:collectionId])
+        if collection
+            if collection.destroy()
+                render json:collection, status: :ok
+            else
+                render json: {message: "Collection not deleted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Collection not found"}, status: :unprocessable_entity
+        end
+    end
+    def getNotesOfCollection
+        collection=Collection.find(params[:collectionId])
+        notes=[]
+        if collection
+            notesId=collection.notes
+            notesId.each do |id|
+                note=Note.find(id)
+                notes<<note
+            end
+            render json:notes, status: :ok
+        else
+            render json: {message: "Collection not found"}, status: :unprocessable_entity
+        end
+    end
 end

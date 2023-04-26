@@ -25,5 +25,12 @@ Rails.application.routes.draw do
     put 'accept_noteRequest', action: :acceptRequest, controller: :notes
     delete 'reject_noteRequest', action: :rejectRequest, controller: :notes
     put 'update_password', action: :updatePassword, controller: :user
+    delete 'delete_friendship', action: :deleteFriend, controller: :user
+    post 'create_collection', action: :createCollection, controller: :notes
+    put 'add_noteToCollection', action: :addNoteToCollection, controller: :notes
+    get 'get_collectionsOfUser', action: :getCollectionsOfUser, controller: :notes
+    put 'delete_noteOfCollection', action: :deleteNoteOfCollection, controller: :notes
+    delete 'delete_collection', action: :deleteCollection, controller: :notes
+    get 'get_notesOfCollection', action: :getNotesOfCollection, controller: :notes
   end
 end
