@@ -133,12 +133,17 @@ class Api::NotesController < ApplicationController
     end
     def addNoteToCollection
         collection=Collection.find(_id:params[:collectionId])
-        collection.notes<<params[:noteId]
-        if collection.update()
-            render json:collection, status: :ok
+        if collection.notes.include?(params[:noteId])
+            render json: {message: "The note is already in the collection"}, status: :unprocessable_entity
         else
-            render json: {message: "Note not added"}, status: :unprocessable_entity
+            collection.notes<<params[:noteId]
+            if collection.update()
+                render json:collection, status: :ok
+            else
+                render json: {message: "Note not added"}, status: :unprocessable_entity
+            end
         end
+        
     end
     def getCollectionsOfUser
         collection=Collection.where(idUser:params[:idUser])
