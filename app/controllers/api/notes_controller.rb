@@ -188,4 +188,23 @@ class Api::NotesController < ApplicationController
             render json: {message: "Collection not found"}, status: :unprocessable_entity
         end
     end
+    def getAllNotesShared
+        sharedNotes=[]
+        requests=SharedNote.where(state:'true')
+        requests.each do |request|
+            note=Note.find(request.noteId)
+            
+            user=User.find(request.userId)
+            sharedNotes<<{
+                idShared: request._id,
+                note:note,
+                user: user.username
+            }         
+        end
+        if sharedNotes
+            render json:sharedNotes, status: :ok
+        else
+            render json: {message: "Shared notes not found"}, status: :unprocessable_entity
+        end
+    end
 end
