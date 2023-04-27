@@ -3,7 +3,7 @@ class Api::UserController < ApplicationController
         if(params[:password] == params[:password2])
                 if params[:password].match?(/^(?=.*\d)(?=.*[a-zA-Z]).{8,}$/)
                     if params[:phone].match?(/\A([6-9]\d{8})\z/)
-                        user = User.new(username: params[:username], email: params[:email], phone: params[:phone], type: params[:type], password_digest: params[:password])
+                        user = User.new(username: params[:username], email: params[:email], phone: params[:phone], image: params[:image], type: params[:type], password_digest: params[:password])
                         user.password_digest = BCrypt::Password.create(user.password_digest)
                         if user.save()
                             render json:user, status: :ok
@@ -49,7 +49,7 @@ class Api::UserController < ApplicationController
                 Note.where(idUser: user.username).update_all(idUser: params[:username])
             end
             puts params[:username]
-            User.find(params[:_id]).update(username: params[:username], email: params[:email], phone: params[:phone], type: params[:type])
+            User.find(params[:_id]).update(username: params[:username], email: params[:email], phone: params[:phone], image: params[:image], type: params[:type])
             
         else
             render json: {message: "The phone number must be between 600 00 00 00 and 999 99 99 99"}, status: :unprocessable_entity
