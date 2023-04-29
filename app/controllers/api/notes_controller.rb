@@ -23,6 +23,13 @@ class Api::NotesController < ApplicationController
             render json: {msg: 'Notes not found'}, status: :unprocessable_entity
         end
     end
+    def deleteNoteByIdUser
+        if Note.where(idUser: params[:idUser]).destroy_all
+            render json:note, status: :ok
+        else
+            render json: {msg: 'Notes not found'}, status: :unprocessable_entity
+        end
+    end
     def updateNote
         note = Note.find(params[:_id])
         if note

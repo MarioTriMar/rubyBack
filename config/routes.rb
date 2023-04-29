@@ -7,7 +7,9 @@ Rails.application.routes.draw do
     get 'get_allNotes', action: :getAllNotes, controller: :notes
     get 'get_notesByTag', action: :getNoteByTag, controller: :notes
     get 'get_allNotesByUserId', action: :getNoteByIdUser, controller: :notes
+    delete 'delete_allNotesByUserId', action: :deleteNoteByIdUser, controller: :notes
     post 'add_user', action: :addUser, controller: :user
+    delete 'delete_user', action: :deleteUser, controller: :user
     get 'login', action: :login, controller: :user
     get 'get_allUsers', action: :getAllUsers, controller: :user
     put 'update_user', action: :updateUser, controller: :user

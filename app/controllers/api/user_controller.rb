@@ -38,7 +38,7 @@ class Api::UserController < ApplicationController
         if user
             render json:user, status: :ok
         else
-            render json: {msg: 'Note not found'}, status: :unprocessable_entity
+            render json: {msg: 'User not found'}, status: :unprocessable_entity
         end
     end
     def updateUser
@@ -46,7 +46,7 @@ class Api::UserController < ApplicationController
         if params[:phone].match?(/\A([6-9]\d{8})\z/)
             user = User.find(params[:_id])
             if user.username!=params[:username]
-                Note.where(idUser: user.username).update_all(idUser: params[:username])
+                User.where(idUser: user.username).update_all(idUser: params[:username])
             end
             puts params[:username]
             User.find(params[:_id]).update(username: params[:username], email: params[:email], phone: params[:phone], image: params[:image], type: params[:type])
@@ -133,6 +133,18 @@ class Api::UserController < ApplicationController
             end
         else
             render json: {message: "Request not found"}, status: :unprocessable_entity
+        end
+    end
+    def deleteUser
+        user = User.find(params[:_id])
+        if user
+            if user.destroy()
+                render json:user, status: :ok
+            else
+                render json: {message: "User not deleted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "User not found"}, status: :unprocessable_entity
         end
     end
     def rejectFriendshipRequest
