@@ -35,5 +35,6 @@ Rails.application.routes.draw do
     get 'get_notesOfCollection', action: :getNotesOfCollection, controller: :notes
     get 'get_allFriendships', action: :getAllFriendships, controller: :user
     get 'get_AllNotesShared', action: :getAllNotesShared, controller: :notes
+    get 'get_AllSharedNotesByUserId', action: :getAllSharedNotesByUserId, controller: :notes
   end
 end
