@@ -90,19 +90,29 @@ class Api::NotesController < ApplicationController
     end
 
     def getNoteRequests
-        notesRequests= SharedNote.where(userId: params[:userId], state: 'false')
-        requestsAux=[]
-        notesRequests.each do |request|
-            note=Note.find(request.noteId)
-            requestsAux<<{
-                noteRequest:request,
-                note: note
-            }
-        end
-        if requestsAux
-            render json:requestsAux, status: :ok
+        notesUser=Note.where(idUser: params[:userId])
+        sharedRequest=[]
+        if notesUser
+            notesUser.each do |note|
+                request=SharedNote.where(noteId: note._id, state:'false')
+                request.each do |req|
+                    user=User.find(req.userId)
+                    sharedRequest<<{
+                        request:request,
+                        note: note,
+                        user: user
+                    
+                    }
+                end
+                
+            end
+            if sharedRequest
+                render json:sharedRequest, status: :ok
+            else
+                render json: {message: "Not requests available"}, status: :unprocessable_entity
+            end
         else
-            render json: {msg: 'Requests not found'}, status: :unprocessable_entity
+            render json: {message: "Notes not found"}, status: :unprocessable_entity
         end
     end
     def acceptRequest
