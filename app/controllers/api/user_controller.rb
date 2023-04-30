@@ -139,6 +139,22 @@ class Api::UserController < ApplicationController
         user = User.find(params[:_id])
         if user
             if user.destroy()
+                friendshipsA=Friendship.where(userA:params[:_id])
+                if friendshipsA
+                    friendshipsA.destroy_all
+                end
+                friendshipsB=Friendship.where(userB:params[:_id])
+                if friendshipsB
+                    friendshipsB.destroy_all
+                end
+                sharedNotes=SharedNote.where(userId:params[:_id])
+                if sharedNotes
+                    sharedNotes.destroy_all
+                end
+                collections=Collection.where(idUser:params[:_id])
+                if collections
+                    collections.destroy_all
+                end
                 render json:user, status: :ok
             else
                 render json: {message: "User not deleted"}, status: :unprocessable_entity

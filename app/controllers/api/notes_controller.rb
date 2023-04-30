@@ -47,6 +47,18 @@ class Api::NotesController < ApplicationController
         note = Note.find(params[:_id])
         if note
             if note.destroy()
+                shared=SharedNote.where(noteId: note._id)
+                if shared
+                    shared.destroy_all
+                end
+                collections=Collection.all
+                if collections
+                    collections.each do |collection|
+                        collection.notes.delete(params[:_id])
+                        collection.update()
+                    end
+                end
+
                 render json:note, status: :ok
             else
                 render json: {message: "Note not deleted"}, status: :unprocessable_entity
@@ -238,6 +250,16 @@ class Api::NotesController < ApplicationController
             render json:sharedNotes, status: :ok
         else
             render json: {message: "Shared notes not found"}, status: :unprocessable_entity
+        end
+    end
+    def getAllCollections
+        
+        collections = Collection.all
+        
+        if collections
+            render json:collections, status: :ok
+        else
+            render json: {message: "Collections not found"}, status: :unprocessable_entity
         end
     end
 end
