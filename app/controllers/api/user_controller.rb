@@ -109,7 +109,7 @@ class Api::UserController < ApplicationController
             user=User.find(friendship.userA)
             friendshipsAux<<{
                 _id:friendship._id,
-                userA:friendship.userA,
+                userA:user,
                 userB:friendship.userB,
                 nameB:user.username,
                 state:friendship.state,
@@ -194,6 +194,10 @@ class Api::UserController < ApplicationController
         end
         render json:{message:""}, status: :ok
     end
+
+ 
+
+
     def getFriendshipRequestOfUsers
         friendship=Friendship.where(userA: params[:userB], userB: params[:userA], state:'false')
         if friendship
@@ -234,8 +238,8 @@ class Api::UserController < ApplicationController
             userB=User.find(friendship.userB)
             friendshipsAux<<{
                 idRequest: friendship._id,
-                userA: userA.username,
-                userB: userB.username
+                userA: userA,
+                userB: userB
             }      
         end
         if friendshipsAux
