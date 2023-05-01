@@ -30,7 +30,7 @@ Rails.application.routes.draw do
     post 'create_collection', action: :createCollection, controller: :notes
     put 'add_noteToCollection', action: :addNoteToCollection, controller: :notes
     get 'get_collectionsOfUser', action: :getCollectionsOfUser, controller: :notes
-    put 'delete_noteOfCollection', action: :deleteNoteOfCollection, controller: :notes
+    delete 'delete_noteOfCollection', action: :deleteNoteOfCollection, controller: :notes
     delete 'delete_collection', action: :deleteCollection, controller: :notes
     get 'get_notesOfCollection', action: :getNotesOfCollection, controller: :notes
     get 'get_allFriendships', action: :getAllFriendships, controller: :user
