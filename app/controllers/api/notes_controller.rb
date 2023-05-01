@@ -262,4 +262,30 @@ class Api::NotesController < ApplicationController
             render json: {message: "Collections not found"}, status: :unprocessable_entity
         end
     end
+    def getAllPossibleNotes
+        user=User.find(params[:userId])
+        ownNotes=Note.where(idUser: user.username)
+        idNotes=[]
+        ownNotes.each do |note|
+            idNotes<<note
+        end
+        sharedRequest=SharedNote.where(userId: params[:userId], state:'true')
+        sharedRequest.each do |request|
+            note=Note.find(request.noteId)
+            idNotes<<note
+        end
+        collectionNotes=Collection.find(params[:collectionId])
+        idNotesCollection=[]
+        collectionNotes.notes.each do |noteId|
+            note=Note.find(noteId)
+            idNotesCollection<<note
+        end
+        possibleNotes=[]
+        possibleNotes=idNotes-idNotesCollection
+        if possibleNotes
+            render json: possibleNotes, status: :ok
+        else
+            render json: {message: "Not possible notes"}, status: :unprocessable_entity
+        end
+    end
 end
