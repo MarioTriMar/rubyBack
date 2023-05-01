@@ -57,13 +57,17 @@ class Api::UserController < ApplicationController
     end
     def updatePassword
         if (params[:password]==params[:password2])
-            user=User.find(params[:userId])
-            if user
-                user.password_digest = BCrypt::Password.create(params[:password])
-                user.update()
-                render json:user, status: :ok
+            if params[:password].match?(/^(?=.*\d)(?=.*[a-zA-Z]).{8,}$/)
+                user=User.find(params[:userId])
+                if user
+                    user.password_digest = BCrypt::Password.create(params[:password])
+                    user.update()
+                    render json:user, status: :ok
+                else
+                    render json: {msg: 'User does not exist'}, status: :unprocessable_entity
+                end
             else
-                render json: {msg: 'User does not exist'}, status: :unprocessable_entity
+                render json: {message: "The password must be at least 8 characters and at least one of them must be a digit"}, status: :unprocessable_entity
             end
         else
             render json: {message: "Passwords do not match"}, status: :unprocessable_entity
