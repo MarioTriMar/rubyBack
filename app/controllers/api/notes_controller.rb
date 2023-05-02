@@ -23,6 +23,13 @@ class Api::NotesController < ApplicationController
             render json: {msg: 'Notes not found'}, status: :unprocessable_entity
         end
     end
+    def deleteNoteByIdUser
+        if Note.where(idUser: params[:idUser]).destroy_all
+            render json:note, status: :ok
+        else
+            render json: {msg: 'Notes not found'}, status: :unprocessable_entity
+        end
+    end
     def updateNote
         note = Note.find(params[:_id])
         if note
@@ -40,6 +47,18 @@ class Api::NotesController < ApplicationController
         note = Note.find(params[:_id])
         if note
             if note.destroy()
+                shared=SharedNote.where(noteId: note._id)
+                if shared
+                    shared.destroy_all
+                end
+                collections=Collection.all
+                if collections
+                    collections.each do |collection|
+                        collection.notes.delete(params[:_id])
+                        collection.update()
+                    end
+                end
+
                 render json:note, status: :ok
             else
                 render json: {message: "Note not deleted"}, status: :unprocessable_entity
@@ -64,6 +83,209 @@ class Api::NotesController < ApplicationController
             render json:note, status: :ok
         else
             render json: {msg: 'Note not found'}, status: :unprocessable_entity
+        end
+    end
+
+    def createNoteRequest
+        exist = SharedNote.where(userId: params[:userId], noteId: params[:noteId])
+        
+        if exist.present?
+            render json:{message:"Already shared"}, status: :unprocessable_entity and return
+        else
+            sharedNote = SharedNote.new(userId: params[:userId], noteId: params[:noteId], state: params[:state])
+            if sharedNote.save()
+              render json:sharedNote, status: :ok
+            else
+                render json: {message: "Request not created"}, status: :unprocessable_entity
+            end
+        end
+    end
+    def getAllSharedNotesByUserId
+        request=SharedNote.where(userId: params[:userId], state:'true')
+        notes=[]
+        if request
+            request.each do |req|
+                note=Note.find(req.noteId)
+                notes<<note
+            end
+            if notes
+                render json:notes, status: :ok
+            else
+                render json: {message: "Notes not found"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Requests not found"}, status: :unprocessable_entity
+        end
+    end
+    def getNoteRequests
+        notesUser=Note.where(idUser: params[:userId])
+        sharedRequest=[]
+        if notesUser
+            notesUser.each do |note|
+                request=SharedNote.where(noteId: note._id, state:'false')
+                request.each do |req|
+                    user=User.find(req.userId)
+                    sharedRequest<<{
+                        request:req,
+                        note: note,
+                        user: user
+                    
+                    }
+                end
+                
+            end
+            if sharedRequest
+                render json:sharedRequest, status: :ok
+            else
+                render json: {message: "Not requests available"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Notes not found"}, status: :unprocessable_entity
+        end
+    end
+    def acceptRequest
+        noteRequest=SharedNote.find(params[:requestId])
+        if noteRequest
+            if noteRequest.update(state:'true')
+                render json:noteRequest, status: :ok
+            else
+                render json: {message: "Request not accepted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Request not found"}, status: :unprocessable_entity
+        end
+    end
+    def rejectRequest
+        noteRequest=SharedNote.find(params[:requestId])
+        if noteRequest
+            if noteRequest.destroy()
+                render json:noteRequest, status: :ok
+            else
+                render json: {message: "Request not deleted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Request not found"}, status: :unprocessable_entity
+        end
+    end
+
+    def createCollection
+        collection = Collection.new(name: params[:name], idUser: params[:idUser])
+        if collection.save()
+            render json:collection, status: :ok
+        else
+            render json: {message: "Collection not created"}, status: :unprocessable_entity
+        end
+    end
+    def addNoteToCollection
+        collection=Collection.find(_id:params[:collectionId])
+        if collection.notes.include?(params[:noteId])
+            render json: {message: "The note is already in the collection"}, status: :unprocessable_entity
+        else
+            collection.notes<<params[:noteId]
+            if collection.update()
+                render json:collection, status: :ok
+            else
+                render json: {message: "Note not added"}, status: :unprocessable_entity
+            end
+        end
+        
+    end
+    def getCollectionsOfUser
+        collection=Collection.where(idUser:params[:idUser])
+        if collection
+            render json:collection, status: :ok
+        else
+            render json: {message: "Collections not found"}, status: :unprocessable_entity
+        end
+    end
+    def deleteNoteOfCollection
+        collection=Collection.find(_id:params[:collectionId])
+        collection.notes.delete(params[:noteId])
+        if collection.update()
+            render json:collection, status: :ok
+        else
+            render json: {message: "Note not added"}, status: :unprocessable_entity
+        end
+    end
+    def deleteCollection
+        collection = Collection.find(params[:collectionId])
+        if collection
+            if collection.destroy()
+                render json:collection, status: :ok
+            else
+                render json: {message: "Collection not deleted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Collection not found"}, status: :unprocessable_entity
+        end
+    end
+    def getNotesOfCollection
+        collection=Collection.find(params[:collectionId])
+        notes=[]
+        if collection
+            notesId=collection.notes
+            notesId.each do |id|
+                note=Note.find(id)
+                notes<<note
+            end
+            render json:notes, status: :ok
+        else
+            render json: {message: "Collection not found"}, status: :unprocessable_entity
+        end
+    end
+    def getAllNotesShared
+        sharedNotes=[]
+        requests=SharedNote.where(state:'true')
+        requests.each do |request|
+            note=Note.find(request.noteId)
+            
+            user=User.find(request.userId)
+            sharedNotes<<{
+                idShared: request._id,
+                note:note,
+                user: user.username
+            }         
+        end
+        if sharedNotes
+            render json:sharedNotes, status: :ok
+        else
+            render json: {message: "Shared notes not found"}, status: :unprocessable_entity
+        end
+    end
+    def getAllCollections
+        
+        collections = Collection.all
+        
+        if collections
+            render json:collections, status: :ok
+        else
+            render json: {message: "Collections not found"}, status: :unprocessable_entity
+        end
+    end
+    def getAllPossibleNotes
+        user=User.find(params[:userId])
+        ownNotes=Note.where(idUser: user.username)
+        idNotes=[]
+        ownNotes.each do |note|
+            idNotes<<note
+        end
+        sharedRequest=SharedNote.where(userId: params[:userId], state:'true')
+        sharedRequest.each do |request|
+            note=Note.find(request.noteId)
+            idNotes<<note
+        end
+        collectionNotes=Collection.find(params[:collectionId])
+        idNotesCollection=[]
+        collectionNotes.notes.each do |noteId|
+            note=Note.find(noteId)
+            idNotesCollection<<note
+        end
+        possibleNotes=[]
+        possibleNotes=idNotes-idNotesCollection
+        if possibleNotes
+            render json: possibleNotes, status: :ok
+        else
+            render json: {message: "Not possible notes"}, status: :unprocessable_entity
         end
     end
 end

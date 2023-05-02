@@ -3,7 +3,7 @@ class Api::UserController < ApplicationController
         if(params[:password] == params[:password2])
                 if params[:password].match?(/^(?=.*\d)(?=.*[a-zA-Z]).{8,}$/)
                     if params[:phone].match?(/\A([6-9]\d{8})\z/)
-                        user = User.new(username: params[:username], email: params[:email], phone: params[:phone], type: params[:type], password_digest: params[:password])
+                        user = User.new(username: params[:username], email: params[:email], phone: params[:phone], image: params[:image], type: params[:type], password_digest: params[:password])
                         user.password_digest = BCrypt::Password.create(user.password_digest)
                         if user.save()
                             render json:user, status: :ok
@@ -38,7 +38,7 @@ class Api::UserController < ApplicationController
         if user
             render json:user, status: :ok
         else
-            render json: {msg: 'Note not found'}, status: :unprocessable_entity
+            render json: {msg: 'User not found'}, status: :unprocessable_entity
         end
     end
     def updateUser
@@ -46,13 +46,31 @@ class Api::UserController < ApplicationController
         if params[:phone].match?(/\A([6-9]\d{8})\z/)
             user = User.find(params[:_id])
             if user.username!=params[:username]
-                Note.where(idUser: user.username).update_all(idUser: params[:username])
+                User.where(idUser: user.username).update_all(idUser: params[:username])
             end
             puts params[:username]
-            User.find(params[:_id]).update(username: params[:username], email: params[:email], phone: params[:phone], type: params[:type])
+            User.find(params[:_id]).update(username: params[:username], email: params[:email], phone: params[:phone], image: params[:image], type: params[:type])
             
         else
             render json: {message: "The phone number must be between 600 00 00 00 and 999 99 99 99"}, status: :unprocessable_entity
+        end
+    end
+    def updatePassword
+        if (params[:password]==params[:password2])
+            if params[:password].match?(/^(?=.*\d)(?=.*[a-zA-Z]).{8,}$/)
+                user=User.find(params[:userId])
+                if user
+                    user.password_digest = BCrypt::Password.create(params[:password])
+                    user.update()
+                    render json:user, status: :ok
+                else
+                    render json: {msg: 'User does not exist'}, status: :unprocessable_entity
+                end
+            else
+                render json: {message: "The password must be at least 8 characters and at least one of them must be a digit"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "Passwords do not match"}, status: :unprocessable_entity
         end
     end
     def getUserById
@@ -95,7 +113,7 @@ class Api::UserController < ApplicationController
             user=User.find(friendship.userA)
             friendshipsAux<<{
                 _id:friendship._id,
-                userA:friendship.userA,
+                userA:user,
                 userB:friendship.userB,
                 nameB:user.username,
                 state:friendship.state,
@@ -121,7 +139,34 @@ class Api::UserController < ApplicationController
             render json: {message: "Request not found"}, status: :unprocessable_entity
         end
     end
-
+    def deleteUser
+        user = User.find(params[:_id])
+        if user
+            if user.destroy()
+                friendshipsA=Friendship.where(userA:params[:_id])
+                if friendshipsA
+                    friendshipsA.destroy_all
+                end
+                friendshipsB=Friendship.where(userB:params[:_id])
+                if friendshipsB
+                    friendshipsB.destroy_all
+                end
+                sharedNotes=SharedNote.where(userId:params[:_id])
+                if sharedNotes
+                    sharedNotes.destroy_all
+                end
+                collections=Collection.where(idUser:params[:_id])
+                if collections
+                    collections.destroy_all
+                end
+                render json:user, status: :ok
+            else
+                render json: {message: "User not deleted"}, status: :unprocessable_entity
+            end
+        else
+            render json: {message: "User not found"}, status: :unprocessable_entity
+        end
+    end
     def rejectFriendshipRequest
         friendship = Friendship.find(params[:_id])
         if friendship
@@ -153,12 +198,58 @@ class Api::UserController < ApplicationController
         end
         render json:{message:""}, status: :ok
     end
+
+ 
+
+
     def getFriendshipRequestOfUsers
         friendship=Friendship.where(userA: params[:userB], userB: params[:userA], state:'false')
         if friendship
             render json:friendship, status: :ok
         else
             render json: {msg: 'Friendship not found'}, status: :unprocessable_entity
+        end
+    end
+    def getAllFriends
+        friendshipsA=Friendship.where(userA:params[:_id], state:'true')
+        friends=[]
+        friendshipsA.each do |friendshipA|
+            user=User.find(friendshipA.userB)
+            friends<<{
+                idRequest: friendshipA._id,
+                user: user
+            }      
+        end
+        friendshipsB=Friendship.where(userB:params[:_id],state:'true')
+        friendshipsB.each do |friendshipB|
+            user=User.find(friendshipB.userA)
+            friends<<{
+                idRequest: friendshipB._id,
+                user: user
+            }           
+        end
+        if friends
+            render json:friends, status: :ok
+        else
+            render json: {message: "Friends not found"}, status: :unprocessable_entity
+        end
+    end
+    def getAllFriendships
+        friendshipsAux=[]
+        friendships=Friendship.where(state:'true')
+        friendships.each do |friendship|
+            userA=User.find(friendship.userA)
+            userB=User.find(friendship.userB)
+            friendshipsAux<<{
+                idRequest: friendship._id,
+                userA: userA,
+                userB: userB
+            }      
+        end
+        if friendshipsAux
+            render json:friendshipsAux, status: :ok
+        else
+            render json: {message: "Not friendships found"}, status: :unprocessable_entity
         end
     end
 end
